@@ -1,71 +1,114 @@
 import streamlit as st
 import pandas as pd
-try:
-    import matplotlib.pyplot as plt
-except ImportError as e:
-    st.error("Matplotlib no está instalado. Por favor, instala el paquete con: pip install matplotlib.")
-    raise e
-
+import plotly.express as px
 
 def mostrar():
-    # Título principal
-    st.title("📊 Panel de Ventas")
-    st.write("---")
+    st.subheader("Filtrar Datos y Captura de Datos")
+    st.write("El procesamiento de datos a través de Ciencia de Datos usando Streamlit de Python")
 
-    # Resumen general
-    st.subheader("Resumen de Ventas")
-    st.metric("Ingresos Totales", "$120,000", "+8% desde el mes pasado")
-    st.metric("Ventas Este Mes", "540 unidades", "+12% desde el mes pasado")
+    # Cargar los datos
+    dfDatos = pd.read_csv('http://raw.githubusercontent.com/gcastano/datasets/main/gapminder_data.csv')
 
-    # Gráfico de barras: Ventas mensuales
-    st.write("### 🔍 Ventas Mensuales")
-    ventas_mensuales = {
-        "Mes": ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio"],
-        "Ventas": [12000, 15000, 18000, 22000, 19000, 24000],
-    }
-    df_ventas = pd.DataFrame(ventas_mensuales)
+    # Mostrar la tabla de los registros
+    st.metric("**Registros Totales**", len(dfDatos))
+    st.dataframe(dfDatos, use_container_width=True)
 
-    fig, ax = plt.subplots()
-    ax.bar(df_ventas["Mes"], df_ventas["Ventas"], color="skyblue")
-    ax.set_xlabel("Mes")
-    ax.set_ylabel("Ingresos ($)")
-    ax.set_title("Ingresos Mensuales")
+    # Crear filtros
+    continent_filter = st.multiselect(
+        "Selecciona los continentes:",
+        options=dfDatos['continent'].unique(),
+        default=dfDatos['continent'].unique()
+    )
+    country_filter = st.text_input("Escriba el nombre del País (opcional):", value="")
 
-    st.pyplot(fig)
-
-    # Tabla de productos más vendidos
-    st.write("### 🥇 Productos más Vendidos")
-    productos = {
-        "Producto": ["Producto A", "Producto B", "Producto C"],
-        "Unidades Vendidas": [230, 180, 145],
-        "Ingresos Generados": ["$11,500", "$9,000", "$7,250"],
-    }
-    df_productos = pd.DataFrame(productos)
-    st.table(df_productos)
-
-    # Proyecciones de ventas con slider
-    st.write("### 🔮 Proyecciones de Ventas")
-    incremento = st.slider("Porcentaje de crecimiento estimado:", 0, 50, 10)
-    proyeccion = 24000 * (1 + incremento / 100)
-    st.metric("Proyección para el próximo mes", f"${proyeccion:,.2f}")
-
-    # KPI y estado de objetivos
-    st.write("---")
-    st.write("### 🎯 Estado de Objetivos de Ventas")
-    st.progress(0.75)  # Ejemplo: 75% del objetivo cumplido
-
-    # Botón de descarga de datos
-    st.write("---")
-    st.write("## 📥 Descargar Informe de Ventas")
-    csv = df_ventas.to_csv(index=False).encode('utf-8')
-    st.download_button(
-        label="Descargar CSV",
-        data=csv,
-        file_name="informe_ventas.csv",
-        mime="text/csv",
+    age_range = st.slider( 
+        "Selecciona el Rango de Edad:", 
+        min_value=int(dfDatos['median_age_year'].min()), 
+        max_value=int(dfDatos['median_age_year'].max()), 
+        value=(int(dfDatos['median_age_year'].min()), int(dfDatos['median_age_year'].max()))
     )
 
-    # Pie de página
-    st.write("---")
-    st.write("Made with by **JAVIG**")
+    # Filtrar los datos basados en las selecciones
+    filtered_data = dfDatos[
+        (dfDatos['continent'].isin(continent_filter)) &
+        (dfDatos['country'].str.contains(country_filter, case=False, na=False)) &
+        (dfDatos['median_age_year'] >= age_range[0]) &
+        (dfDatos['median_age_year'] <= age_range[1])
+    ]
+
+    # Mostrar la tabla de los registros filtrados y la métrica actualizada 
+    st.metric("**Registros Totales Filtrados**", len(filtered_data)) 
+    st.dataframe(filtered_data, use_container_width=True)
+
+    # Crear gráficos si hay datos filtrados
+    if not filtered_data.empty:
+        # Gráfico de Dispersión
+        fig_scatter = px.scatter(
+            filtered_data, x='mean_house_income', y='lifeExpectancy', color='continent', 
+            title='Ingreso Medio del Hogar vs Esperanza de Vida',
+            labels={'mean_house_income': 'Ingreso Medio del Hogar', 'lifeExpectancy': 'Esperanza de Vida'}
+        )
+        st.plotly_chart(fig_scatter)
+
+        # Gráfico de Líneas
+        fig_line = px.line(
+            filtered_data, x='year', y='population', color='continent', 
+            title='Población a lo Largo del Tiempo',
+            labels={'year': 'Año', 'population': 'Población'}
+        )
+        st.plotly_chart(fig_line)
+
+        # Gráfico de Barras
+        fig_bar = px.bar(
+            filtered_data, x='continent', y='population', color='continent', 
+            title='Población por Continente',
+            labels={'continent': 'Continente', 'population': 'Población'}
+        )
+        st.plotly_chart(fig_bar)
+    else:
+        st.warning("No hay datos para mostrar en los gráficos con los filtros seleccionados.")
+        st.subheader("Consulta de Datos Interactiva")
+        st.write("Realiza preguntas sobre los datos de población y otros indicadores.")
+    
+    # Selección de preguntas
+    pregunta = st.selectbox(
+        "Selecciona una pregunta:",
+        [
+            "¿Cuáles son los países con menos población?",
+            "¿Cuáles son los países con mayor esperanza de vida?",
+            "¿Cuáles son los continentes con mayor ingreso medio del hogar?",
+            "¿Cuál es la población media por continente?"
+        ]
+    )
+
+    # Procesar la pregunta seleccionada
+    if pregunta == "¿Cuáles son los países con menos población?":
+        resultado = dfDatos.nsmallest(10, 'population')[['country', 'population']]
+        st.write("### Países con Menor Población")
+        st.table(resultado)
+    
+    elif pregunta == "¿Cuáles son los países con mayor esperanza de vida?":
+        resultado = dfDatos.nlargest(10, 'lifeExpectancy')[['country', 'lifeExpectancy']]
+        st.write("### Países con Mayor Esperanza de Vida")
+        st.table(resultado)
+    
+    elif pregunta == "¿Cuáles son los continentes con mayor ingreso medio del hogar?":
+        resultado = dfDatos.groupby('continent')['mean_house_income'].mean().sort_values(ascending=False)
+        st.write("### Ingreso Medio del Hogar por Continente")
+        st.table(resultado)
+    
+    elif pregunta == "¿Cuál es la población media por continente?":
+        resultado = dfDatos.groupby('continent')['population'].mean()
+        st.write("### Población Media por Continente")
+        st.table(resultado)
+
+    # Visualización del resultado (opcional)
+    if st.checkbox("Mostrar gráfico"):
+        if pregunta in ["¿Cuáles son los países con menos población?", "¿Cuáles son los países con mayor esperanza de vida?"]:
+            fig = px.bar(resultado, x='country', y=resultado.columns[1], title=pregunta)
+            st.plotly_chart(fig)
+        elif pregunta in ["¿Cuáles son los continentes con mayor ingreso medio del hogar?", "¿Cuál es la población media por continente?"]:
+            fig = px.bar(resultado, x=resultado.index, y=resultado.values, title=pregunta)
+            st.plotly_chart(fig)
+
 

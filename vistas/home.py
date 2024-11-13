@@ -1,103 +1,109 @@
+# Vista de la página home.py
+import json
+import requests  # pip install requests
 import streamlit as st
+from streamlit_lottie import st_lottie  # pip install streamlit-lottie
 
+# Función para cargar animaciones desde archivo JSON
+def get(path: str):
+    with open(path, "r") as p:
+        return json.load(p)
+
+# Función para cargar animaciones desde URL
+def get_url(url: str):
+    r = requests.get(url)
+    if r.status_code != 200:
+        return None
+    return r.json()
+
+# Función `mostrar` que contiene todo el contenido de la página de inicio
 def mostrar():
-    # Inicio
     with st.container():
-        st.subheader("Bienvenidos, somos Javig")
-        st.title("Creamos soluciones para acelerar su negocio")
-        st.write("Somos unos apasionados de las tenologías y la innovación, especialización en el sector de la digitalización y automatización de negocios. Nos gusta crear soluciones para resolver problemas y mejorar procesos. ")
-        st.write("[Saber más >>>](https://www.ideasforchange.com/es/archivo-blog/claves-acelerar-negocio-innovacion)")
+        st.subheader("Bienvenidos, Somos SOFTIA 👋")
+        st.title("Creamos soluciones para acelerar tu negocio")
+        st.write("""
+            Somos unos apasionados de las tecnologías y la innovación, especializados en el sector de la digitalización y automatización de negocios. Nos gusta crear soluciones para resolver problemas y mejorar procesos.
+        """)
+        st.write("[Saber más >](https://streamlit.io/)")
 
-    # Sobre Nosotros
+    # Sobre nosotros
     with st.container():
         st.write("---")
-        izquierda_columna, derecha_columna = st.columns((2, 1))
-        
-        with derecha_columna:
-            st.image("img/javig.jpeg", caption="Javig")
+        I_columna, R_columna = st.columns((2))
+        with I_columna:
+            st.header("Sobre nosotros 🔍")
+            st.write("""
+                Nuestro objetivo es poder aportar valor a los negocios ayudándoles a ahorrar tiempo y dinero a través de la implantación de nuevas tecnologías.
+                Si esto suena interesante para ti puedes contactarnos a través del formulario al final de la página.
+            """)
+            st.write("[Más sobre nosotros >](https://streamlit.io/)")
 
-        with izquierda_columna:
-            st.subheader("Sobre Nosotros")
-            st.write(
-                """
-                Nuestro objetivo es poder aportar valor a los negocios ayudandoles a ahorrar tiempo y dinero a través de la implantación de nuevas tecnologías como la inteligencia artifical, analisis de datos o implantación de software de automatización.
-
-Seguramente te vamos a poder ayudar si:
-
--Tienes un negocio y quieres mejorar tus procesos de trabajo para ahorrar tiempo y dinero Tienes trabajadores que emplean parte de su jornada a realizar tareas repetitivas sin valor añadido
-
-para tu negocio
-
-No tienes claras las métricas de tu negocio y quieres tomar decisiones basadas en datos
-
--Quieres mejorar la experiencia de tus clientes
-
-Usas herramientas de software antiguas o poco eficientes o procesos en los que usas papel y boligrafo
-
-***Si esto suena interesante para ti puedes contactarnos a través del formulario que encontrarás al final de la página***
-                """
-            )
-            st.write("[Saber más >>>](https://www.nomadia-group.com/es/recursos/blog/objetivos-comerciales-y-ejemplos-maximiza-tu-exito/)")
+        with R_columna:
+            path = get("animacion/Animation.json")
+            st_lottie(path)
+            url = get_url("https://lottie.host/8611e424-5454-46ef-acc1-dbe8a675c7ed/GenBO7VdIL.json")
+            st_lottie(url)
 
     # Servicios
     with st.container():
         st.write("---")
-        st.subheader("Servicios")
-
+        st.header("Servicios")
         imagen_columna, texto_columna = st.columns((1, 2))
-
         with imagen_columna:
-            st.image("img/disapp.jpg", caption="Diseño de aplicaciones")
-
+            st.image("img/disapp.jpg")
         with texto_columna:
             st.subheader("Diseño de aplicaciones")
-            st.write(
-                """
-                Si en tus procesos diarios tienes que introducir información en diferentes fuentes de datos o bien tienes que trabajar con documentación en papel, es hora de pensar en implementar una aplicación en tu negocio para potenciar y optimizar el funcionamiento de los procesos diarias
-        
-                """
-            )
-            st.write("[Saber más >>>](https://dossetenta.com/los-diferentes-tipos-de-diseno-de-apps-y-cual-es-el-mejor-para-tu-empresa/#:~:text=El%20dise%C3%B1o%20de%20apps%20es,una%20experiencia%20de%20usuario%20satisfactoria.)")
+            st.write("""
+                Implementación de aplicaciones para optimizar procesos diarios.
+            """)
+            st.write("[Ver servicios > ](https://streamlit.io/)")
 
-    # Automatización de procesos
+        # Otras secciones de servicios aquí, como Automatización y Visualización de datos.
+
+    # Contactos
     with st.container():
         st.write("---")
+        c_columna, inf_columna = st.columns((1, 2))
+        with c_columna:
+            st.subheader("📧Contactos")
+            contacto_form = """
+            <form action="https://formsubmit.co/manzanaresdionicio@gmail.com" method="POST">
+                <input type="hidden" name="_captcha" value="false">
+                <input type="text" name="name" placeholder="Escriba su nombre" required>
+                <input type="email" name="email" placeholder="nombre@email.com" required>
+                <textarea name="message" placeholder="Su mensaje"></textarea>
+                <button type="submit">Enviar...</button>
+            </form>
+            """
+            st.markdown(contacto_form, unsafe_allow_html=True)
 
-        imagen_columna, texto_columna = st.columns((1, 2))
-
-        with imagen_columna:
-            st.image("img/autpro.jpg", caption="Automatización de procesos")
-
-        with texto_columna:
-            st.subheader("Automatización de procesos")
-            st.write(
-                """
-                Aunque las computadoras son omnipresentes hoy día, todavía hay una cantidad significativa de operaciones manuales que se llevan a cabo a diario en empresas de todo el mundo. Esto puede afectar a todas las áreas de negocio, desde la producción y las ventas hasta el soporte de marketing y TI.
-
-               Dado que las tareas manuales tediosas a menudo pueden estar sujetas a errores humanos, es recomendable reducirlas tanto como sea posible. Aquí, la automatización de procesos puede ser la respuesta. Con la automatización de procesos, puede optimizar los flujos de trabajo diarios que se ejecutan en sus departamentos, agilizar las operaciones, minimizar los errores, reducir los riesgos de seguridad y aumentar la productividad, y todo esto de una vez.
-                """
-            )
-            st.write("[Saber más >>>](https://www.boc-group.com/es/blog/bpm/automatizacion-de-procesos-su-camino-hacia-la-eficiencia-operativa#:~:text=Con%20la%20automatizaci%C3%B3n%20de%20procesos,todo%20esto%20de%20una%20vez.)")
-
-    # Visualización de Datos
+    # Footer
     with st.container():
         st.write("---")
+        p1, p2, p3 = st.columns((3))
+        with p1:
+            st.subheader("Contacto")
+            st.write("***Direccion:*** Acoyapa, Chontales, Nicaragua")
+            st.write("***Telefono:*** +(505) 0000-0000")
+        with p2:
+            st.subheader("Servicios")
+            st.write("Diseño de aplicaciones")
+            st.write("Automatización de procesos")
+            st.write("Visualización de datos")
+        with p3:
+            st.subheader("Redes")
+            st.markdown("[YOUTUBE](https://www.youtube.com/)")
+            st.markdown("[Facebook](https://www.markdownguide.org/cheat-sheet/)")
+            st.markdown("[Instagram](https://www.markdownguide.org/cheat-sheet/)")
 
-        imagen_columna, texto_columna = st.columns((1, 2))
 
-        with imagen_columna:
-            st.image("img/visdat.jpg", caption="Visualización de datos")
 
-        with texto_columna:
-            st.subheader("Visualización de Datos")
-            st.write(
-                """
-                La visualización de datos es la representación gráfica de información y datos. Al utilizar elementos visuales como cuadros, gráficos y mapas, las herramientas de visualización de datos proporcionan una manera accesible de ver y comprender tendencias, valores atípicos y patrones en los datos.
 
-               En el mundo del big data, las herramientas y tecnologías de visualización de datos son esenciales para analizar grandes cantidades de información y tomar decisiones basadas en los datos..
-                """
-            )
-            st.write("[Saber más >>>](https://www.tableau.com/es-mx/learn/articles/data-visualization#:~:text=La%20visualizaci%C3%B3n%20de%20datos%20ayuda,y%20resaltando%20la%20informaci%C3%B3n%20%C3%BAtil.)")
+
+
+
+
+
 
 
 
